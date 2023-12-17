@@ -14,10 +14,10 @@ import javax.swing.JFrame;
 public class Server {
 
 	static ArrayList<ServerThread> list = new ArrayList<>();
-
 	static int clientCount = 0; //클라이언트의 수 count, 클라이언트 생성 시 타이틀 정하는데 사용 됨
 	static Random random = new Random();
 	static int lier = random.nextInt(6)+1; //라이어에 해당하는 클라이언트 번호
+
 	
 	public static void main(String[] args) throws IOException {
 		
@@ -108,5 +108,4 @@ class ServerThread extends Thread {
 		}
 	}
 }
-
 
