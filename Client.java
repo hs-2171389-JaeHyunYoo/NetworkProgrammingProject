@@ -25,6 +25,9 @@ import java.awt.event.FocusListener;
 //소스를 입력하고 Ctrl+Shift+O를 눌러서 필요한 파일을 포함한다. 
 public class Client {
    //새로 만든 변수
+	
+   public static int x = 0;
+   public static int y = 50;
    public static List<Client> clients = new ArrayList<>();
    public static Vector<Client> clientManagement = new Vector(); 
    final static int ServerPort = 5000;
@@ -32,7 +35,7 @@ public class Client {
    protected JTextArea textArea;
    DataInputStream is;
    DataOutputStream os;
-   String clientLier = null; //라이어에 해당하는 클라이언트의 번호(client N)
+   static String clientLier = null; //라이어에 해당하는 클라이언트의 번호(client N)
    String clientNum; //client 1, client 2, client 3, ..., client 6
    static int count = 0;   
    
@@ -81,7 +84,9 @@ public class Client {
       public MyFrame(String s) {
          super(s);
          setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
+         setLocation(x, y);
+         
+         
          textField = new JTextField(30);
          
          //채팅 창 비활성화
@@ -149,23 +154,42 @@ public class Client {
    
 
    public void closeWindow() {
-	   System.out.println(voteClient);
+	   //System.out.println(voteClient);
        SwingUtilities.invokeLater(() -> {
            JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(clients.get(voteClient).textField);
            frame.dispose(); // 창을 닫습니다.
        });
    }
+   
     
    public static void main(String[] args) throws IOException {
+	   
+	   
 	   for(int i=0; i<6; i++) {
          Client m = new Client();
          clientManagement.add(m);
          clients.add(m);
+         //m.setLocation(300, 200); // 오류뜸
+         x += 350; // x 위치를 조정하여 다른 위치에 배치
+         if (i == 2) {
+        	 y += 230;
+        	 x = 0;
+         }
+         else
+         y += 0; // y 위치를 조정하여 다른 위치에 배치
+         
       }
-      MyTimer mt = new MyTimer(60);
+      MyTimer mt = new MyTimer(10);
       mt.startTimer();
-      
-      //클라이언트 창 닫는코드 
+      mt.setLocation(1100,300);
+
       //
+//      WinClient wn = new WinClient();
+//      WinLier wn2 = new WinLier();
+//      //위치
+//	  wn.setLocation(1100, 300);
+//	  wn2.setLocation(1100, 300);
+      
+	  
    }
 }
