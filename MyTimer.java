@@ -14,10 +14,17 @@ public class MyTimer extends JFrame {
         Container cont = getContentPane();
         display = new JLabel();
         cont.add(display, BorderLayout.CENTER);
+        
+        Font font = display.getFont();
+        Font newFont = font.deriveFont(40f);
+        display.setFont(newFont);
+        display.setHorizontalAlignment(SwingConstants.CENTER); // 텍스트를 가운데 정렬
 
         setSize(300, 200);
         setLocation(400, 200);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        cont.setBackground(Color.GRAY);	//배경색 변경
+        display.setForeground(Color.YELLOW); // 글자색 변경
     }
 
     public void startTimer() {
@@ -39,6 +46,7 @@ public class MyTimer extends JFrame {
                 	}
                     dispose(); // 타이머 종료 후 창 닫기
                     Vote vote = new Vote(); //투표 시작
+                    vote.setLocation(1100, 50);
                 }
                 
             }
