@@ -1,111 +1,187 @@
-
-import java.awt.Container;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.net.InetAddress;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Random;
-import java.util.Scanner;
 
-import javax.swing.JButton;
 import javax.swing.JFrame;
-public class Server {
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
-	static ArrayList<ServerThread> list = new ArrayList<>();
-	static int clientCount = 0; //클라이언트의 수 count, 클라이언트 생성 시 타이틀 정하는데 사용 됨
-	static Random random = new Random();
-	static int lier = random.nextInt(6)+1; //라이어에 해당하는 클라이언트 번호
-	static int round = 0;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+
+
+
+
+//소스를 입력하고 Ctrl+Shift+O를 눌러서 필요한 파일을 포함한다. 
+public class Client {
+   //새로 만든 변수
 	
-	public static void main(String[] args) throws IOException {
-		
-		ServerSocket ssocket = new ServerSocket(5000);
-		
-		Socket s;
+   public static int x = 0;
+   public static int y = 50;
+   public static List<Client> clients = new ArrayList<>();
+   public static Vector<Client> clientManagement = new Vector(); 
+   final static int ServerPort = 5000;
+   protected JTextField textField;
+   protected JTextArea textArea;
+   DataInputStream is;
+   DataOutputStream os;
+   static String clientLier = null; //라이어에 해당하는 클라이언트의 번호(client N)
+   String clientNum; //client 1, client 2, client 3, ..., client 6
+   static int count = 0;   //게임 참가자(클라이언트)의 수를 세서 저장하는 정수형 변수
+   
+   public static int voteClient; //
+   
+   public Client() throws IOException {
+      InetAddress ip = InetAddress.getByName("localhost");
+      Socket s = new Socket(ip, ServerPort);
+      is = new DataInputStream(s.getInputStream());
+      os = new DataOutputStream(s.getOutputStream());
 
-		System.out.println("[System] 라이어는 "+lier+"번 참가자");
-		System.out.println("[System] 6명이 모이면 게임이 시작됩니다.");
-		//Vote.fixedLier = lier;
-		//System.out.println("fixedLier = "+lier);
-		for(int i=0; i<6; i++) {
-			s = ssocket.accept();
+      //라이어에 해당하는 클라이언트 번호
+      clientLier = is.readUTF();
+      
+      //ex. "client 4"
+      clientNum = is.readUTF();
+      //System.out.println(clientNum);
+      
+      count += 1;
+      
+      MyFrame f = new MyFrame(clientNum);
+      
+      Thread thread2 = new Thread(new Runnable() {
+         @Override
+         public void run() {
+            while (true) {
+               try {
+                  String msg = is.readUTF();
+                  // 받은 패킷을 텍스트 영역에 표시한다.
+                  textArea.append(new String(msg) + "\n");
+               } catch (IOException e) {
+                  e.printStackTrace();
+               }
+            }
+         }   
+      });
 
-			DataInputStream is = new DataInputStream(s.getInputStream());
-			DataOutputStream os = new DataOutputStream(s.getOutputStream());
-			
-			//라이어에 해당하는 클라이언트 번호(1~6)
-			os.writeUTF(Integer.toString(lier));
-			
-			ServerThread thread = new ServerThread(s, (clientCount+1)+"번 참가자", is, os);
-			list.add(thread);
-			thread.start();
-			
-			if(i == 6) {
-				//cleint 6
-				os.writeUTF("client " + (clientCount+1));
-				os.writeInt(clientCount);
-				System.out.println(clientCount);
-				
-				break;
-			}
-			else {
-				//cleint 1 ~ client 5
-				os.writeUTF("client " + (clientCount+1));
-				//os.writeInt(clientCount);
-				clientCount++;
-			}
-		}
-		System.out.println("[System] "+clientCount+"명이 모여 게임이 시작됩니다.");
-	}
-	
+      thread2.start();
+   }
+
+
+   // 내부 클래스 정의
+   class MyFrame extends JFrame implements ActionListener, FocusListener {
+      private boolean isFirstClick = true;
+
+      public MyFrame(String s) {
+         super(s);
+         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+         setLocation(x, y);
+         
+         
+         textField = new JTextField(30);
+         
+         //채팅 창 비활성화
+         //textField.setEnabled(false);
+         
+         //라이어 여부에 대해 서로 다른 주제어 설정
+         if(s.equals("client "+ clientLier)) {
+            textField.setForeground(Color.GRAY);
+            textField.setText(" 라이어 : 사과"); //lier's word
+         }
+         else {
+            textField.setForeground(Color.GRAY);
+            textField.setText(" 시민 : 오렌지 "); //no-lier's word
+         }
+         
+         
+         textField.addFocusListener(this);
+         textField.addActionListener(this);
+
+         textArea = new JTextArea(10, 30);
+         //textArea.setEditable(false);
+
+         add(textField, BorderLayout.PAGE_END);
+         add(textArea, BorderLayout.CENTER);
+         pack();
+         setVisible(true);
+         
+         
+      }      
+      
+      private void openVotingWindowAfterTimer() {
+           // 타이머 종료 후에 투표 창을 열도록 코드를 작성하세요
+           JFrame votingFrame = new JFrame("투표 창");
+           // ... (투표 창 UI 및 로직 설정)
+       }
+      
+      public void focusGained(FocusEvent e) {
+            // 사용자가 텍스트 필드에 포커스를 받으면, 기존 텍스트 지우고 사용자 입력 시작
+          if (isFirstClick) {
+                   textField.setText("");
+                   textField.setForeground(Color.BLACK); // 포커스 받으면 텍스트 색상을 검정색으로 변경
+                   isFirstClick = false;
+               }
+        }
+
+      public void actionPerformed(ActionEvent evt) {
+         String s = textField.getText();
+         try {
+            os.writeUTF(clientNum);
+            os.writeUTF(s);
+         } catch (IOException e) {
+            e.printStackTrace();
+         }
+         textField.selectAll();
+         textArea.setCaretPosition(textArea.getDocument().getLength());
+      }
+
+      @Override
+      public void focusLost(FocusEvent e) {
+         // TODO Auto-generated method stub
+         
+      }
+   }
+   
+   
+
+   public void closeWindow() {
+	   //System.out.println(voteClient);
+       SwingUtilities.invokeLater(() -> {
+           JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(clients.get(voteClient).textField);
+           frame.dispose(); // 창을 닫습니다.
+       });
+   }
+   
+    
+   public static void main(String[] args) throws IOException {
+	   
+	   
+	   for(int i=0; i<6; i++) {
+         Client m = new Client();
+         clientManagement.add(m);
+         clients.add(m);
+         //m.setLocation(300, 200); // 오류뜸
+         x += 350; // x 위치를 조정하여 다른 위치에 배치
+         if (i == 2) {
+        	 y += 230;
+        	 x = 0;
+         }
+         else
+         y += 0; // y 위치를 조정하여 다른 위치에 배치
+         
+      }
+      MyTimer mt = new MyTimer(10);
+      mt.startTimer();
+      mt.setLocation(1100,300);
+	  
+   }
 }
-
-class ServerThread extends Thread {
-	Scanner scn = new Scanner(System.in);
-	private String name;
-	final DataInputStream is;
-	final DataOutputStream os;
-	Socket s;
-	boolean active;
-
-	public ServerThread(Socket s, String name, DataInputStream is, DataOutputStream os) {
-		this.is = is;
-		this.os = os;
-		this.name = name;
-		this.s = s;
-		this.active = true;
-	}
-
-	@Override
-	public void run() {
-		String whoIsTalking;
-		String message;
-		while (true) {
-			try {
-				whoIsTalking = is.readUTF();
-				message = is.readUTF();
-				System.out.println(whoIsTalking+" : "+message);
-				if (message.equals("logout")) {
-					this.active = false;
-					this.s.close();
-					break;
-				}
-				for (ServerThread t : Server.list) {
-					t.os.writeUTF(this.name + " : " + message);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				break;
-			}
-		}
-		try {
-			this.is.close();
-			this.os.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-}
-
