@@ -20,12 +20,8 @@ public class Vote extends JFrame {
     private JLabel resultLabel1;
     private JLabel resultLabel2;
 
-    //private int round = 1;
-    //static int fixedLier;
 
-    public Vote() {      
-    	
-    	//System.out.println("1 -> Server.lier : "+ Client.clientLier);
+    public Vote() {     
         setTitle("투표하기");
         setPreferredSize(new Dimension(400, 300));
         Container container = getContentPane();
@@ -102,13 +98,12 @@ public class Vote extends JFrame {
     
     // 가장 많은 투표를 받은 버튼 찾기
     public void findMostVotedButton() {
-    	Server.round += 1;
-        System.out.println(Server.round+"!!!!!!");
+    	Server.round += 1; //라운드 수 증가, 서버에 저장되게 됨
     	for (int i = 0; i < 6; i++) {
             if (voteCount[i] > maxVotes) {
                 maxVotes = voteCount[i];
                 maxIndex = i;
-                System.out.println("제일 많이 클릭된 클라이언트는 "+i);
+                System.out.println("제일 많이 클릭된 클라이언트는 "+(i+1)+"번 클라이언트");
             }
         }
 
@@ -123,13 +118,10 @@ public class Vote extends JFrame {
         	Client.clientManagement.get(i).textArea.append("[System] : "+(maxIndex+1)+"번째 참가자가 탈락하였습니다.\n");
         	if(i == maxIndex) {
         		Client.clientManagement.get(maxIndex).closeWindow(); 
+        		buttons[maxIndex].setEnabled(false);
         		//System.out.println("["+maxIndex+"] 참가자 탈락됨"); //3
         		System.out.println("[System] 1 라운드 결과 : "+(i+1)+"번 탈락");
         		if((i+1) == Integer.parseInt(Client.clientLier)) {
-        			//System.out.println("["+(i+1)+"] & ["+(Server.lier)+"]");
-        			//System.out.println("lier : "+Server.lier);
-        			//System.out.println("탈락자 : "+(i+1));
-        			//System.out.println("2 -> Server.lier : "+fixedLier);
         			System.out.println("[System] 라이어 탈락");
         			dispose();
         			WinClient wc = new WinClient();
@@ -138,7 +130,6 @@ public class Vote extends JFrame {
         			System.out.println("[System] 라이어 아님");
         			dispose();
         	        
-        			buttons[maxIndex].setEnabled(false);
         			maxVotes = 0;
         			clientCount = 0;
         			for(int j=0; j<6; j++) {
@@ -150,8 +141,6 @@ public class Vote extends JFrame {
         				WinLier wl = new WinLier();
         			}
         			else {
-        				System.out.println("round : "+Server.round);
-        				//Server.round+=1;
         				MyTimer mt2 = new MyTimer(10);
             	        mt2.startTimer();
             	        mt2.setLocation(1100, 300);
